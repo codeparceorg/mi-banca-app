@@ -1,0 +1,19 @@
+permissions:
+  contents: read  
+  
+on:
+  workflow_dispatch:
+
+jobs:
+  Build:
+    runs-on: kubernetes
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      - name: Build
+        uses: codeparce/ci-workflows/.github/actions/node/build@v1
+        with:
+          type: web-build
+          target: dist
