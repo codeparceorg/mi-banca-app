@@ -1,6 +1,3 @@
-permissions:
-  contents: read  
-  
 on:
   workflow_dispatch:
 
@@ -17,3 +14,21 @@ jobs:
         with:
           type: web-build
           target: dist
+
+  docker-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+          
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: dist
+
+      - name: Publish to Docker Hub
+        uses: codeparce/ci-workflows/.github/actions/docker@v1
+        with:
+          docker-account-name: ${{ secrets.DOCKER_ACCOUNT_NAME }}
+          docker-access-token: ${{ secrets.DOCKER_ACCESS_TOKEN }}
