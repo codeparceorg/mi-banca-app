@@ -16,8 +16,8 @@ jobs:
           target: dist
 
   docker-publish:
-    depends-on: build
-    runs-on: ubuntu-latest
+    needs: build
+    runs-on: kubernetes
     steps:
       - uses: actions/checkout@v4
           
