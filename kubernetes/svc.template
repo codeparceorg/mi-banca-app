@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${NAME_APP}-service
+  namespace: ${NAME_SPACE}
+  labels:
+    name: ${NAME_APP}
+    namespace: ${NAME_SPACE}
+spec:
+  selector:
+    app: ${NAME_APP}
+  ports:
+    - name: http       # 🔹 nombre obligatorio y único
+      port: ${PORT}
+      targetPort: ${PORT} 
+
+  type: ClusterIP

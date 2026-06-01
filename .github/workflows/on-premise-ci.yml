@@ -3,13 +3,13 @@ on:
 
 jobs:
   build:
-    runs-on: kubernetes
+    runs-on: ubuntu-latest #Runner cloud (default)
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 
 
-      - name: Build
+      - name: Build in node
         uses: codeparce/ci-workflows/.github/actions/node/build@v1
         with:
           type: web-build
@@ -17,7 +17,7 @@ jobs:
 
   docker-publish:
     needs: build
-    runs-on: kubernetes
+    runs-on: ubuntu-latest  #Runner cloud (default)
     steps:
       - uses: actions/checkout@v4
           
@@ -32,3 +32,23 @@ jobs:
         with:
           docker-account-name: ${{ secrets.DOCKER_ACCOUNT_NAME }}
           docker-access-token: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+
+
+  deploy:
+    runs-on: kubernetes #Runner on-premise
+    needs: docker-publish
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+          chmod 600 ~/.kube/config
+    
+      - name: Deploy to Kubernetes
+        run: | 
+          ./kubernetes/deploy.sh

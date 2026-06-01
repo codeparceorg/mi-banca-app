@@ -1,0 +1,17 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: "${NAME}-ingress"
+  namespace: ${NAME_SPACE}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: ${ENTRY}
+
+spec:
+  entryPoints:
+    - ${ENTRY}
+  routes:
+    - match: Host(`${DOMAIN}`)
+      kind: Rule
+      services:
+        - name: ${NAME_APP}-service
+          port: ${PORT}
