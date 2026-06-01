@@ -2,7 +2,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  Build:
+  build:
     runs-on: kubernetes
     steps:
       - uses: actions/checkout@v4
@@ -16,8 +16,8 @@ jobs:
           target: dist
 
   docker-publish:
+    depends-on: build
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
           
