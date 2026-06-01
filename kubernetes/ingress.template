@@ -1,7 +1,7 @@
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: "${NAME}-ingress"
+  name: "${NAME_APP}-ingress"
   namespace: ${NAME_SPACE}
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: ${ENTRY}
