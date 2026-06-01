@@ -45,6 +45,7 @@ jobs:
 
       - name: Configure kubeconfig
         run: |
+          apt-get install -y gettext
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
           chmod 600 ~/.kube/config
