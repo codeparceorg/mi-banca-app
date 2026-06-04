@@ -1,0 +1,16 @@
+name: Test Runner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: docker
+
+    steps:
+      - name: Test
+        run: |
+          echo "Runner funcionando"
+          hostname
+          whoami
+          sleep 1000
