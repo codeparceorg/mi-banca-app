@@ -1,0 +1,15 @@
+name: Test Runner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: lkd
+
+    steps:
+      - name: Test
+        run: |
+          echo "Runner funcionando"
+          hostname
+          whoami
