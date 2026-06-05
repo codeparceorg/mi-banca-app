@@ -61,7 +61,11 @@ jobs:
           envsubst < deployment.template > deployment.yaml
           envsubst < ingress.template > ingress.yaml
 
-          cat metadata.yaml 1_namespace.yaml svc.yaml deployment.yaml ingress.yaml > all-resources.yaml
+          cat metadata.yaml 
+          cat 1_namespace.yaml 
+          cat svc.yaml 
+          cat deployment.yaml 
+          cat ingress.yaml
 
           kubectl apply -f ./
 
