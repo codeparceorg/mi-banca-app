@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ${NAME_APP}-deployment
+  name: ${GITHUB_REPOSITORY}-deployment
   namespace: ${NAME_SPACE}
   labels:
-    name: ${NAME_APP}
+    name: ${GITHUB_REPOSITORY}
     namespace: ${NAME_SPACE}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ${NAME_APP}
+      app: ${GITHUB_REPOSITORY}
   template:
     metadata:
       labels:
-        app: ${NAME_APP}
+        app: ${GITHUB_REPOSITORY}
     spec:
       containers:
-        - name: ${NAME_APP}
+        - name: ${GITHUB_REPOSITORY}
           image: ${IMAGE_NAME}
           ports:
             - containerPort: ${PORT}

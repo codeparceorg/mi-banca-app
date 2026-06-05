@@ -37,6 +37,8 @@ jobs:
   deploy:
     runs-on: kubernetes #Runner on-premise
     needs: docker-publish
+    env:
+      GITHUB_REPOSITORY: ${{ github.event.repository.name }}
     steps:
       - uses: actions/checkout@v4
 
@@ -52,6 +54,7 @@ jobs:
           set -a && source .env.kube && set +a
 
           envsubst < 1_namespace.template > 1_namespace.yaml
+          envsubst < metadata.template > metadata.yaml
           envsubst < svc.template > svc.yaml
           envsubst < deployment.template > deployment.yaml
           envsubst < ingress.template > ingress.yaml
