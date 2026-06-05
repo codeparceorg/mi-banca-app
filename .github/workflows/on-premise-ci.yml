@@ -60,3 +60,5 @@ jobs:
           envsubst < ingress.template > ingress.yaml
 
           kubectl apply -f ./
+
+          echo "Domain: ${GITHUB_REPOSITORY}.${GITHUB_REF_NAME}.${NAME_SPACE}.lab"

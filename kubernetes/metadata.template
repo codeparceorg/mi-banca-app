@@ -11,6 +11,7 @@ commonLabels:
   team: devops
 
 commonAnnotations:
+  url: ${GITHUB_REPOSITORY}.${GITHUB_REF_NAME}.${NAME_SPACE}.lab
   owner: ${GITHUB_ACTOR}
   repo: ${GITHUB_REPOSITORY}
   commit: ${GITHUB_SHA}
