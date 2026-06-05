@@ -1,7 +1,7 @@
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: "${GITHUB_REPOSITORY}-ingress"
+  name: "${GITHUB_REPOSITORY_NAME}-ingress"
   namespace: ${NAME_SPACE}
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: ${ENTRY}
@@ -10,8 +10,8 @@ spec:
   entryPoints:
     - ${ENTRY}
   routes:
-    - match: Host(`${GITHUB_REPOSITORY}.${GITHUB_REF_NAME}.${NAME_SPACE}.lab`)
+    - match: Host(`${GITHUB_REPOSITORY_NAME}.${GITHUB_REF_NAME}.${NAME_SPACE}.lab`)
       kind: Rule
       services:
-        - name: ${GITHUB_REPOSITORY}-service
+        - name: ${GITHUB_REPOSITORY_NAME}-service
           port: ${PORT}

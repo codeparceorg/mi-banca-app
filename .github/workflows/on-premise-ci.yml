@@ -1,3 +1,5 @@
+name: On-Premise deploy
+
 on:
   workflow_dispatch:
 
@@ -38,7 +40,7 @@ jobs:
     runs-on: kubernetes #Runner on-premise
     needs: docker-publish
     env:
-      GITHUB_REPOSITORY: ${{ github.event.repository.name }}
+      GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
     steps:
       - uses: actions/checkout@v4
 
@@ -59,6 +61,8 @@ jobs:
           envsubst < deployment.template > deployment.yaml
           envsubst < ingress.template > ingress.yaml
 
+          cat metadata.yaml 1_namespace.yaml svc.yaml deployment.yaml ingress.yaml > all-resources.yaml
+
           kubectl apply -f ./
 
-          echo "Domain: ${GITHUB_REPOSITORY}.${GITHUB_REF_NAME}.${NAME_SPACE}.lab"
+          echo "Domain: ${GITHUB_REPOSITORY_NAME}.${GITHUB_REF_NAME}.${NAME_SPACE}.lab"

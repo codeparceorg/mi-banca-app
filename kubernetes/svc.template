@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ${GITHUB_REPOSITORY}-service
+  name: ${GITHUB_REPOSITORY_NAME}-service
   namespace: ${NAME_SPACE}
   labels:
-    name: ${GITHUB_REPOSITORY}
+    name: ${GITHUB_REPOSITORY_NAME}
     namespace: ${NAME_SPACE}
 spec:
   selector:
-    app: ${GITHUB_REPOSITORY}
+    app: ${GITHUB_REPOSITORY_NAME}
   ports:
     - name: http       # 🔹 nombre obligatorio y único
       port: ${PORT}
