@@ -8,10 +8,10 @@ resources:
 
 commonLabels:
   environment: ${GITHUB_REF_NAME}
-  team: devops
-
-commonAnnotations:
-  url: ${GITHUB_REPOSITORY_NAME}.${GITHUB_REF_NAME}.${NAME_SPACE}.lab
+  url: http://${GITHUB_REPOSITORY_NAME}.${GITHUB_REF_NAME}.${NAME_SPACE}.lab
   owner: ${GITHUB_ACTOR}
   repo: ${GITHUB_REPOSITORY_NAME}
   commit: ${GITHUB_SHA}
+
+commonAnnotations:
+  team: devops
