@@ -5,7 +5,7 @@ on:
 
 jobs:
   test:
-    runs-on: lkd
+    runs-on: kubernetes 
 
     steps:
       - name: Test
@@ -13,3 +13,13 @@ jobs:
           echo "Runner funcionando"
           hostname
           whoami
+          
+      - name: Mostrar variables
+        run: |
+          echo "Branch: $GITHUB_REF"
+          echo "Branch corta: $GITHUB_REF_NAME"
+          echo "Commit: $GITHUB_SHA"
+          echo "Actor: $GITHUB_ACTOR"
+          echo "Repo: $GITHUB_REPOSITORY"
+          echo "Workflow: $GITHUB_WORKFLOW"
+          echo "Run ID: $GITHUB_RUN_ID"
