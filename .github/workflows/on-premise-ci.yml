@@ -35,7 +35,7 @@ jobs:
       - name: Publish to Docker Hub
         uses: codeparce/ci-workflows/.github/actions/registry@v1
         with:
-          container-access-token: ${{ secrets.GITHUB_TOKEN }}
+          container-access-token: ${{ secrets.CONTAINER_REGISTRY_PAT_GITHUB }}
 
 
   deploy:
