@@ -19,6 +19,9 @@ jobs:
 
   docker-publish:
     needs: build
+    permissions:
+      contents: read
+      packages: write
     runs-on: ubuntu-latest  #Runner cloud (default)
     steps:
       - uses: actions/checkout@v4
