@@ -30,10 +30,7 @@ jobs:
           path: dist
 
       - name: Publish to Docker Hub
-        uses: codeparce/ci-workflows/.github/actions/docker@v1
-        with:
-          docker-account-name: ${{ secrets.DOCKER_ACCOUNT_NAME }}
-          docker-access-token: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+        uses: codeparce/ci-workflows/.github/actions/registry@v1
 
 
   deploy:
@@ -62,4 +59,4 @@ jobs:
 
           kubectl apply -f ./
 
-          echo "Domain: ${GITHUB_REPOSITORY_NAME}.${GITHUB_REF_NAME}.${NAME_SPACE}.lab"
+          echo "Domain: http://${GITHUB_REPOSITORY_NAME}.${GITHUB_REF_NAME}.${NAME_SPACE}.lab"
