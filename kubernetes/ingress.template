@@ -23,4 +23,4 @@ spec:
       services:
         - name: ${GITHUB_REPOSITORY_NAME}-service
           port: ${PORT}
-  tls: {}
+  #tls: {}
