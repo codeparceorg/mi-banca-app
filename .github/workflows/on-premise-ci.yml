@@ -52,9 +52,6 @@ jobs:
 
       - name: Deploy to Kubernetes
         run: | 
-          sudo apt update
-          sudo apt-get install -y gettext
-
           cd kubernetes 
           set -a && source .env.kube && set +a
 
@@ -73,4 +70,5 @@ jobs:
 
           kubectl apply -f ./
 
+          echo "Domain: http://${GITHUB_REPOSITORY_NAME}.${GITHUB_REF_NAME}.${NAME_SPACE}.lab"
           echo "Domain: https://${GITHUB_REPOSITORY_NAME}.${GITHUB_REF_NAME}.${NAME_SPACE}.lab"
