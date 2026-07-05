@@ -1,7 +1,10 @@
 name: On-Premise deploy
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+  #workflow_dispatch:
 
 jobs:
   build:
@@ -46,9 +49,6 @@ jobs:
       GITHUB_ORG: ${{ github.repository_owner }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v4
 
       - name: Deploy to Kubernetes
         run: | 
