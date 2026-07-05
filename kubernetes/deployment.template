@@ -20,6 +20,8 @@ spec:
       labels:
         app: ${GITHUB_REPOSITORY_NAME}
     spec:
+      imagePullSecrets:
+          - name: ghcr-secret
       containers:
         - name: ${GITHUB_REPOSITORY_NAME}
           image: ${IMAGE_NAME}

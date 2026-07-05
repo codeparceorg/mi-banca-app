@@ -63,8 +63,12 @@ jobs:
           envsubst < deployment.template > deployment.yaml
           envsubst < ingress.template > ingress.yaml
 
-          cat ingress.yaml
-          
+          kubectl create secret docker-registry ghcr-secret \
+            --docker-server=ghcr.io \
+            --docker-username=${{ github.actor }} \
+            --docker-password=${{ secrets.CONTAINER_REGISTRY_PAT_GITHUB }} \
+            --namespace=${NAME_SPACE} 
+
           kubectl apply -f ./
 
           echo "Domain: http://${GITHUB_REPOSITORY_NAME}.${GITHUB_REF_NAME}.${NAME_SPACE}.lab"
