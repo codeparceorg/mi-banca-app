@@ -15,7 +15,7 @@ spec:
   selector:
     app: ${GITHUB_REPOSITORY_NAME}
   ports:
-    - name: http       # 🔹 nombre obligatorio y único
+    - name: https       # 🔹 nombre obligatorio y único
       port: ${PORT}
       targetPort: ${PORT} 
 
