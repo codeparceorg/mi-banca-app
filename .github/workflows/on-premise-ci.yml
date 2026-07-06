@@ -44,6 +44,8 @@ jobs:
   deploy:
     runs-on: kubernetes #Runner on-premise
     needs: docker-publish
+    permissions:
+      contents: read
     env:
       GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
       GITHUB_ORG: ${{ github.repository_owner }}
@@ -68,5 +70,4 @@ jobs:
             --docker-password=${{ secrets.CONTAINER_REGISTRY_PAT_GITHUB }} \
             --namespace=${NAME_SPACE} 
 
-          echo "Domain: http://${GITHUB_REPOSITORY_NAME}.${GITHUB_REF_NAME}.${NAME_SPACE}.lab"
-          echo "Domain: https://${GITHUB_REPOSITORY_NAME}.${GITHUB_REF_NAME}.${NAME_SPACE}.lab"
+          echo "DNS Externo: http://${GITHUB_REPOSITORY_NAME}.${NAME_SPACE}.lab"

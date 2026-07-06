@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_GATEWAY || 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_GATEWAY || 'http://microservicio.sis-main-ms.lab';
 
 export const api = {
   async register(name, email, password) {

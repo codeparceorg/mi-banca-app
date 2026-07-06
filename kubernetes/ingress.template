@@ -18,7 +18,7 @@ spec:
   entryPoints:
     - ${ENTRY}
   routes:
-    - match: Host(`${GITHUB_REPOSITORY_NAME}.${GITHUB_REF_NAME}.${NAME_SPACE}.lab`)
+    - match: Host(`${GITHUB_REPOSITORY_NAME}.${NAME_SPACE}.lab`)
       kind: Rule
       services:
         - name: ${GITHUB_REPOSITORY_NAME}-service
