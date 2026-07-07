@@ -15,7 +15,7 @@ jobs:
           fetch-depth: 0 
 
       - name: Build in node
-        uses: codeparce/ci-workflows/.github/actions/node/build@v1
+        uses: codeparce/ci-workflows/.github/actions/build/node@v1
         with:
           type: web-build
           target: dist
