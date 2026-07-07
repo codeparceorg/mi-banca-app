@@ -1,86 +1,177 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
+import Checkbox from '../components/ui/Checkbox';
+import Alert from '../components/ui/Alert';
+import Spinner from '../components/ui/Spinner';
 import { api } from '../services/api';
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+
+function validate(fullName, email, password, confirmPassword, acceptedTerms) {
+  const errors = {};
+
+  if (!fullName.trim()) {
+    errors.fullName = 'El nombre es obligatorio';
+  } else if (fullName.trim().length < 3) {
+    errors.fullName = 'Mínimo 3 caracteres';
+  } else if (fullName.trim().length > 100) {
+    errors.fullName = 'Máximo 100 caracteres';
+  }
+
+  if (!email.trim()) {
+    errors.email = 'El correo es obligatorio';
+  } else if (!EMAIL_REGEX.test(email)) {
+    errors.email = 'Formato de correo inválido';
+  }
+
+  if (!password) {
+    errors.password = 'La contraseña es obligatoria';
+  } else if (password.length < 8) {
+    errors.password = 'Mínimo 8 caracteres';
+  } else if (!PASSWORD_REGEX.test(password)) {
+    errors.password = 'Debe incluir mayúscula, minúscula y número';
+  }
+
+  if (!confirmPassword) {
+    errors.confirmPassword = 'Confirma tu contraseña';
+  } else if (password && confirmPassword !== password) {
+    errors.confirmPassword = 'Las contraseñas no coinciden';
+  }
+
+  if (!acceptedTerms) {
+    errors.acceptedTerms = 'Debes aceptar los términos y condiciones';
+  }
+
+  return errors;
+}
 
 export default function Signup() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
-  const [error, setError] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => navigate('/login'), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, navigate]);
+
+  const clearFieldError = (field) => {
+    setErrors((prev) => ({ ...prev, [field]: '' }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setApiError('');
+
+    const validation = validate(fullName, email, password, confirmPassword, acceptedTerms);
+    setErrors(validation);
+    if (Object.keys(validation).length > 0) return;
+
     setLoading(true);
     try {
-      await api.register(formData.name, formData.email, formData.password);
-      navigate('/login');
+      await api.signup(fullName.trim(), email.trim(), password);
+      setSuccess('Usuario registrado correctamente.');
     } catch (err) {
-      setError(err.message);
+      setApiError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-md w-96 border border-gray-700">
-        <h1 className="text-2xl font-bold text-center mb-6 text-white">Crear Cuenta</h1>
-        {error && (
-          <div className="mb-4 p-3 bg-red-900/50 text-red-400 rounded-md text-sm border border-red-800">
-            {error}
+    <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] px-4 py-8">
+      <Card className="w-full max-w-sm">
+        <Card.Body className="space-y-6">
+          <div className="text-center space-y-2">
+            <div className="text-4xl">🏦</div>
+            <h1 className="text-2xl font-bold text-[#1E3A8A]">Crear cuenta</h1>
           </div>
-        )}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Nombre</label>
-            <input
-              type="text"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              placeholder="Tu nombre"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
-            <input
-              type="email"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              placeholder="tu@email.com"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Contraseña</label>
-            <input
-              type="password"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              required
-              minLength={6}
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
-          >
-            {loading ? 'Registrando...' : 'Registrarse'}
-          </button>
-        </form>
-        <p className="mt-4 text-center text-sm text-gray-400">
-          ¿Ya tienes cuenta?{' '}
-          <Link to="/login" className="text-blue-400 hover:underline">
-            Inicia sesión
-          </Link>
-        </p>
-      </div>
+
+          {apiError && <Alert>{apiError}</Alert>}
+          {success && <Alert variant="success">{success} Redirigiendo al inicio de sesión...</Alert>}
+
+          {!success && (
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+              <Input
+                label="Nombre completo"
+                name="fullName"
+                type="text"
+                placeholder="Juan Pérez"
+                aria-label="Nombre completo"
+                value={fullName}
+                onChange={(e) => { setFullName(e.target.value); clearFieldError('fullName'); }}
+                error={errors.fullName}
+              />
+
+              <Input
+                label="Correo electrónico"
+                name="email"
+                type="email"
+                placeholder="juan@email.com"
+                aria-label="Correo electrónico"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); clearFieldError('email'); }}
+                error={errors.email}
+              />
+
+              <Input
+                label="Contraseña"
+                name="password"
+                type="password"
+                placeholder="••••••••"
+                aria-label="Contraseña"
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); clearFieldError('password'); }}
+                error={errors.password}
+              />
+
+              <Input
+                label="Confirmar contraseña"
+                name="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                aria-label="Confirmar contraseña"
+                value={confirmPassword}
+                onChange={(e) => { setConfirmPassword(e.target.value); clearFieldError('confirmPassword'); }}
+                error={errors.confirmPassword}
+              />
+
+              <Checkbox
+                name="acceptedTerms"
+                label="Acepto los términos y condiciones"
+                checked={acceptedTerms}
+                onChange={() => { setAcceptedTerms(!acceptedTerms); clearFieldError('acceptedTerms'); }}
+                error={errors.acceptedTerms}
+              />
+
+              <Button type="submit" variant="primary" className="w-full flex items-center justify-center gap-2" disabled={loading}>
+                {loading && <Spinner />}
+                {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+              </Button>
+            </form>
+          )}
+
+          <p className="text-center text-sm text-gray-500">
+            ¿Ya tienes una cuenta?{' '}
+            <Link to="/login" className="text-[#2563EB] hover:underline font-semibold">
+              Iniciar sesión
+            </Link>
+          </p>
+        </Card.Body>
+      </Card>
     </div>
   );
 }

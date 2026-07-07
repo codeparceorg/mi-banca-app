@@ -44,30 +44,22 @@ jobs:
   deploy:
     runs-on: kubernetes #Runner on-premise
     needs: docker-publish
-    permissions:
-      contents: read
     env:
       GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
       GITHUB_ORG: ${{ github.repository_owner }}
+      SVC_NAME: ${{ github.event.repository.name }}-svc
+      NS: sis-${{ github.ref_name  }}-ms
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy to Kubernetes
-        run: | 
-          cd kubernetes 
-          set -a && source .env.kube && set +a
+      - name: Actions for on-premise deploy
+        uses: codeparce/ci-workflows/.github/actions/on-premise@v1
+        with:
+          container-access-token: ${{ secrets.CONTAINER_REGISTRY_PAT_GITHUB }}
+          type: front
 
-          envsubst < 1_namespace.template > 1_namespace.yaml
-          envsubst < svc.template > svc.yaml
-          envsubst < deployment.template > deployment.yaml
-          envsubst < ingress.template > ingress.yaml
-
-          kubectl apply -f ./
-
-          kubectl create secret docker-registry ghcr-secret \
-            --docker-server=ghcr.io \
-            --docker-username=${{ github.actor }} \
-            --docker-password=${{ secrets.CONTAINER_REGISTRY_PAT_GITHUB }} \
-            --namespace=${NAME_SPACE} 
-
-          echo "DNS Externo: http://${GITHUB_REPOSITORY_NAME}.${NAME_SPACE}.lab"
+      - name: Show deployment information
+        run: |
+          echo "Deployment completed successfully."
+          echo "DNS Externo: http://${GITHUB_REPOSITORY_NAME}.${NS}.lab/"
+          echo "DNS interno: ${SVC_NAME}.${NS}.svc.cluster.local/"

@@ -1,74 +1,122 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
+import Alert from '../components/ui/Alert';
+import Spinner from '../components/ui/Spinner';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validate(email, password) {
+  const errors = {};
+  if (!email.trim()) {
+    errors.email = 'El correo es obligatorio';
+  } else if (!EMAIL_REGEX.test(email)) {
+    errors.email = 'Formato de correo inválido';
+  }
+  if (!password) {
+    errors.password = 'La contraseña es obligatoria';
+  } else if (password.length < 8) {
+    errors.password = 'Mínimo 8 caracteres';
+  }
+  return errors;
+}
 
 export default function Login() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
+  const { auth, login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  if (auth) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setApiError('');
+
+    const validation = validate(email, password);
+    setErrors(validation);
+    if (Object.keys(validation).length > 0) return;
+
     setLoading(true);
     try {
-      await api.login(formData.email, formData.password);
+      const data = await api.login(email, password);
+      login(data.accessToken, data.refreshToken, data.user);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.message);
+      setApiError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-md w-96 border border-gray-700">
-        <h1 className="text-2xl font-bold text-center mb-6 text-white">Iniciar Sesión</h1>
-        {error && (
-          <div className="mb-4 p-3 bg-red-900/50 text-red-400 rounded-md text-sm border border-red-800">
-            {error}
+    <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] px-4">
+      <Card className="w-full max-w-sm">
+        <Card.Body className="space-y-6">
+          <div className="text-center space-y-2">
+            <div className="text-4xl">🏦</div>
+            <h1 className="text-2xl font-bold text-[#1E3A8A]">Iniciar sesión</h1>
           </div>
-        )}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
-            <input
+
+          {apiError && <Alert>{apiError}</Alert>}
+
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+            <Input
+              label="Email"
+              name="email"
               type="email"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="tu@email.com"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
+              placeholder="cliente@correo.com"
+              aria-label="Correo electrónico"
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setErrors((p) => ({ ...p, email: '' })); }}
+              error={errors.email}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Contraseña</label>
-            <input
+
+            <Input
+              label="Contraseña"
+              name="password"
               type="password"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="••••••••"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              required
+              aria-label="Contraseña"
+              value={password}
+              onChange={(e) => { setPassword(e.target.value); setErrors((p) => ({ ...p, password: '' })); }}
+              error={errors.password}
             />
+
+            <Button type="submit" variant="primary" className="w-full flex items-center justify-center gap-2" disabled={loading}>
+              {loading && <Spinner />}
+              {loading ? 'Ingresando...' : 'Ingresar'}
+            </Button>
+          </form>
+
+          <div className="text-center space-y-2">
+            <Link
+              to="#"
+              className="block text-sm text-[#2563EB] hover:underline"
+              onClick={(e) => e.preventDefault()}
+              tabIndex={0}
+              aria-label="¿Olvidaste tu contraseña?"
+            >
+              ¿Olvidaste tu contraseña?
+            </Link>
+            <p className="text-sm text-gray-500">
+              ¿No tienes cuenta?{' '}
+              <Link to="/signup" className="text-[#2563EB] hover:underline font-semibold">
+                Regístrate
+              </Link>
+            </p>
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
-          >
-            {loading ? 'Iniciando sesión...' : 'Entrar'}
-          </button>
-        </form>
-        <p className="mt-4 text-center text-sm text-gray-400">
-          ¿No tienes cuenta?{' '}
-          <Link to="/signup" className="text-blue-400 hover:underline">
-            Regístrate
-          </Link>
-        </p>
-      </div>
+        </Card.Body>
+      </Card>
     </div>
   );
 }

@@ -1,35 +1,72 @@
-import { Link } from 'react-router-dom';
+import Spinner from '../components/ui/Spinner';
+import { useDashboard } from '../hooks/useDashboard';
+import DashboardHeader from '../components/dashboard/DashboardHeader';
+import BalanceCard from '../components/dashboard/BalanceCard';
+import QuickActions from '../components/dashboard/QuickActions';
+import RecentTransactions from '../components/dashboard/RecentTransactions';
+import ExpenseChart from '../components/dashboard/ExpenseChart';
 
 export default function Dashboard() {
+  const { data, isLoading, error } = useDashboard();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-[#DC2626] font-medium">Error al cargar el dashboard</p>
+      </div>
+    );
+  }
+
+  const movimientos = data?.movimientos ?? [];
+
+  const stats = [
+    { label: 'Saldo disponible', value: `$${(data?.saldo ?? 0).toLocaleString()}`, color: 'text-[#1E3A8A]', icon: '💰' },
+    { label: 'Ingresos del mes', value: `$${movimientos.filter((m) => m.monto > 0).reduce((a, b) => a + b.monto, 0).toLocaleString()}`, color: 'text-[#16A34A]', icon: '📈' },
+    { label: 'Gastos del mes', value: `$${movimientos.filter((m) => m.monto < 0).reduce((a, b) => a + Math.abs(b.monto), 0).toLocaleString()}`, color: 'text-[#DC2626]', icon: '📉' },
+    { label: 'Movimientos', value: `${movimientos.length}`, color: 'text-[#2563EB]', icon: '🔄' },
+  ];
+
+  const chartData = movimientos.slice(0, 7).map((m) => ({
+    label: m.fecha ? m.fecha.slice(0, 5) : '',
+    value: Math.abs(m.monto),
+    color: m.monto >= 0 ? '#16A34A' : '#DC2626',
+    monto: m.monto,
+  }));
+
+  const isEmpty = movimientos.length === 0;
+
   return (
-    <div className="min-h-screen bg-gray-900">
-      <nav className="bg-gray-800 border-b border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-blue-400">Dashboard</h1>
-          <Link
-            to="/login"
-            className="text-gray-300 hover:text-white"
-          >
-            Cerrar sesión
-          </Link>
+    <div className="space-y-6">
+      <DashboardHeader userName="Usuario" />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat) => (
+          <BalanceCard key={stat.label} {...stat} />
+        ))}
+      </div>
+
+      <QuickActions />
+
+      {isEmpty ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <p className="text-4xl mb-4">📭</p>
+          <p className="text-gray-500 font-medium">No hay movimientos recientes</p>
+          <p className="text-sm text-gray-400 mt-1">Realiza una transferencia para ver tus movimientos aquí.</p>
         </div>
-      </nav>
-      <main className="max-w-7xl mx-auto py-6 px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gray-800 p-6 rounded-lg shadow border border-gray-700">
-            <h2 className="text-lg font-semibold mb-2 text-gray-300">Usuarios</h2>
-            <p className="text-3xl font-bold text-blue-400">1,234</p>
-          </div>
-          <div className="bg-gray-800 p-6 rounded-lg shadow border border-gray-700">
-            <h2 className="text-lg font-semibold mb-2 text-gray-300">Ingresos</h2>
-            <p className="text-3xl font-bold text-green-400">$45,678</p>
-          </div>
-          <div className="bg-gray-800 p-6 rounded-lg shadow border border-gray-700">
-            <h2 className="text-lg font-semibold mb-2 text-gray-300">Pedidos</h2>
-            <p className="text-3xl font-bold text-purple-400">892</p>
-          </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <RecentTransactions transactions={movimientos} />
+          <ExpenseChart data={chartData} />
         </div>
-      </main>
+      )}
     </div>
   );
 }
