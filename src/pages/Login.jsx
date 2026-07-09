@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, Navigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -27,16 +27,12 @@ function validate(email, password) {
 
 export default function Login() {
   const navigate = useNavigate();
-  const { auth, login } = useAuth();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  if (auth) {
-    return <Navigate to="/dashboard" replace />;
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();

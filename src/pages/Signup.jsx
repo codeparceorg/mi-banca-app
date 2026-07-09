@@ -1,72 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
-import Checkbox from '../components/ui/Checkbox';
 import Alert from '../components/ui/Alert';
 import Spinner from '../components/ui/Spinner';
 import { api } from '../services/api';
+import { saveUser } from '../services/users';
+import { useAuth } from '../context/AuthContext';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
 
-function validate(fullName, email, password, confirmPassword, acceptedTerms) {
-  const errors = {};
-
-  if (!fullName.trim()) {
-    errors.fullName = 'El nombre es obligatorio';
-  } else if (fullName.trim().length < 3) {
-    errors.fullName = 'Mínimo 3 caracteres';
-  } else if (fullName.trim().length > 100) {
-    errors.fullName = 'Máximo 100 caracteres';
-  }
-
-  if (!email.trim()) {
-    errors.email = 'El correo es obligatorio';
-  } else if (!EMAIL_REGEX.test(email)) {
-    errors.email = 'Formato de correo inválido';
-  }
-
-  if (!password) {
-    errors.password = 'La contraseña es obligatoria';
-  } else if (password.length < 8) {
-    errors.password = 'Mínimo 8 caracteres';
-  } else if (!PASSWORD_REGEX.test(password)) {
-    errors.password = 'Debe incluir mayúscula, minúscula y número';
-  }
-
-  if (!confirmPassword) {
-    errors.confirmPassword = 'Confirma tu contraseña';
-  } else if (password && confirmPassword !== password) {
-    errors.confirmPassword = 'Las contraseñas no coinciden';
-  }
-
-  if (!acceptedTerms) {
-    errors.acceptedTerms = 'Debes aceptar los términos y condiciones';
-  }
-
-  return errors;
-}
-
-export default function Signup() {
-  const navigate = useNavigate();
-  const [fullName, setFullName] = useState('');
+function Step1({ onComplete, onError }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [errors, setErrors] = useState({});
-  const [apiError, setApiError] = useState('');
-  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (success) {
-      const timer = setTimeout(() => navigate('/login'), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [success, navigate]);
 
   const clearFieldError = (field) => {
     setErrors((prev) => ({ ...prev, [field]: '' }));
@@ -74,21 +23,181 @@ export default function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setApiError('');
+    setErrors({});
+    onError('');
 
-    const validation = validate(fullName, email, password, confirmPassword, acceptedTerms);
-    setErrors(validation);
-    if (Object.keys(validation).length > 0) return;
+    const errs = {};
+    if (!email.trim()) {
+      errs.email = 'El correo es obligatorio';
+    } else if (!EMAIL_REGEX.test(email)) {
+      errs.email = 'Formato de correo inválido';
+    }
+    if (!password) {
+      errs.password = 'La contraseña es obligatoria';
+    } else if (password.length < 8) {
+      errs.password = 'Mínimo 8 caracteres';
+    }
+
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return;
 
     setLoading(true);
     try {
-      await api.signup(fullName.trim(), email.trim(), password);
-      setSuccess('Usuario registrado correctamente.');
+      const data = await api.signup(email.trim(), password);
+      onComplete({
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        IdAuthToken: data.id_auth_token,
+        email: email.trim(),
+      });
     } catch (err) {
-      setApiError(err.message);
+      onError(err.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      <Input
+        label="Correo electrónico"
+        name="email"
+        type="email"
+        placeholder="juan@email.com"
+        aria-label="Correo electrónico"
+        value={email}
+        onChange={(e) => { setEmail(e.target.value); clearFieldError('email'); }}
+        error={errors.email}
+      />
+      <Input
+        label="Contraseña"
+        name="password"
+        type="password"
+        placeholder="••••••••"
+        aria-label="Contraseña"
+        value={password}
+        onChange={(e) => { setPassword(e.target.value); clearFieldError('password'); }}
+        error={errors.password}
+      />
+      <Button type="submit" variant="primary" className="w-full flex items-center justify-center gap-2" disabled={loading}>
+        {loading && <Spinner />}
+        {loading ? 'Creando cuenta...' : 'Continuar'}
+      </Button>
+    </form>
+  );
+}
+
+function Step2({ email, idAuthToken, tokens, onError }) {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  const clearFieldError = (field) => {
+    setErrors((prev) => ({ ...prev, [field]: '' }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrors({});
+    onError('');
+
+    const errs = {};
+    if (!fullName.trim()) errs.fullName = 'El nombre es obligatorio';
+    if (!city.trim()) errs.city = 'La ciudad es obligatoria';
+
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+
+    setLoading(true);
+    try {
+      const user = await saveUser({
+        full_name: fullName.trim(),
+        email,
+        auth_token_id: idAuthToken,
+        phone: phone.trim(),
+        address: address.trim(),
+        city: city.trim(),
+      });
+      login(tokens.accessToken, tokens.refreshToken, user);
+      navigate('/dashboard');
+    } catch (err) {
+      onError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      <Input
+        label="Correo electrónico"
+        name="email"
+        type="email"
+        value={email}
+        readOnly
+        className="bg-gray-50 text-gray-500 cursor-not-allowed"
+      />
+      <Input
+        label="Nombre completo"
+        name="fullName"
+        type="text"
+        placeholder="Juan Pérez"
+        aria-label="Nombre completo"
+        value={fullName}
+        onChange={(e) => { setFullName(e.target.value); clearFieldError('fullName'); }}
+        error={errors.fullName}
+      />
+      <Input
+        label="Teléfono"
+        name="phone"
+        type="tel"
+        placeholder="3001234567"
+        aria-label="Teléfono"
+        value={phone}
+        onChange={(e) => { setPhone(e.target.value); clearFieldError('phone'); }}
+      />
+      <Input
+        label="Dirección"
+        name="address"
+        type="text"
+        placeholder="Calle 10 #20-30"
+        aria-label="Dirección"
+        value={address}
+        onChange={(e) => { setAddress(e.target.value); clearFieldError('address'); }}
+      />
+      <Input
+        label="Ciudad"
+        name="city"
+        type="text"
+        placeholder="Bogotá"
+        aria-label="Ciudad"
+        value={city}
+        onChange={(e) => { setCity(e.target.value); clearFieldError('city'); }}
+        error={errors.city}
+      />
+
+      <Button type="submit" variant="primary" className="w-full flex items-center justify-center gap-2" disabled={loading}>
+        {loading && <Spinner />}
+        {loading ? 'Guardando...' : 'Guardar información'}
+      </Button>
+    </form>
+  );
+}
+
+export default function Signup() {
+  const [step, setStep] = useState(1);
+  const [wizardData, setWizardData] = useState(null);
+  const [apiError, setApiError] = useState('');
+
+  const handleStep1Complete = (data) => {
+    setWizardData(data);
+    setStep(2);
+    setApiError('');
   };
 
   return (
@@ -97,71 +206,24 @@ export default function Signup() {
         <Card.Body className="space-y-6">
           <div className="text-center space-y-2">
             <div className="text-4xl">🏦</div>
-            <h1 className="text-2xl font-bold text-[#1E3A8A]">Crear cuenta</h1>
+            <h1 className="text-2xl font-bold text-[#1E3A8A]">
+              {step === 1 ? 'Crear cuenta' : 'Completa tu información'}
+            </h1>
           </div>
 
+          <p className="text-center text-sm text-gray-500">Paso {step} de 2</p>
+
           {apiError && <Alert>{apiError}</Alert>}
-          {success && <Alert variant="success">{success} Redirigiendo al inicio de sesión...</Alert>}
 
-          {!success && (
-            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-              <Input
-                label="Nombre completo"
-                name="fullName"
-                type="text"
-                placeholder="Juan Pérez"
-                aria-label="Nombre completo"
-                value={fullName}
-                onChange={(e) => { setFullName(e.target.value); clearFieldError('fullName'); }}
-                error={errors.fullName}
-              />
-
-              <Input
-                label="Correo electrónico"
-                name="email"
-                type="email"
-                placeholder="juan@email.com"
-                aria-label="Correo electrónico"
-                value={email}
-                onChange={(e) => { setEmail(e.target.value); clearFieldError('email'); }}
-                error={errors.email}
-              />
-
-              <Input
-                label="Contraseña"
-                name="password"
-                type="password"
-                placeholder="••••••••"
-                aria-label="Contraseña"
-                value={password}
-                onChange={(e) => { setPassword(e.target.value); clearFieldError('password'); }}
-                error={errors.password}
-              />
-
-              <Input
-                label="Confirmar contraseña"
-                name="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                aria-label="Confirmar contraseña"
-                value={confirmPassword}
-                onChange={(e) => { setConfirmPassword(e.target.value); clearFieldError('confirmPassword'); }}
-                error={errors.confirmPassword}
-              />
-
-              <Checkbox
-                name="acceptedTerms"
-                label="Acepto los términos y condiciones"
-                checked={acceptedTerms}
-                onChange={() => { setAcceptedTerms(!acceptedTerms); clearFieldError('acceptedTerms'); }}
-                error={errors.acceptedTerms}
-              />
-
-              <Button type="submit" variant="primary" className="w-full flex items-center justify-center gap-2" disabled={loading}>
-                {loading && <Spinner />}
-                {loading ? 'Creando cuenta...' : 'Crear cuenta'}
-              </Button>
-            </form>
+          {step === 1 ? (
+            <Step1 onComplete={handleStep1Complete} onError={setApiError} />
+          ) : (
+            <Step2
+              email={wizardData.email}
+              idAuthToken={wizardData.IdAuthToken}
+              tokens={{ accessToken: wizardData.accessToken, refreshToken: wizardData.refreshToken }}
+              onError={setApiError}
+            />
           )}
 
           <p className="text-center text-sm text-gray-500">

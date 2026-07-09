@@ -1,97 +1,39 @@
-const API_BASE_URL = import.meta.env.VITE_API_GATEWAY || 'http://microservicio.sis-main-ms.lab';
+import { request } from './httpClient';
 
 export const api = {
-  async signup(fullName, email, password) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
-
+  async signup(email, password) {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+      return await request('/auth/signup', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName, email, password }),
-        signal: controller.signal,
+        body: { email, password },
       });
-
-      if (response.status === 400) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.message || 'Solicitud inválida.');
-      }
-
-      if (response.status === 500) {
-        throw new Error('Ha ocurrido un error inesperado.');
-      }
-
-      if (!response.ok) {
-        throw new Error('Ha ocurrido un error inesperado.');
-      }
-
-      return response.json();
     } catch (err) {
-      if (err.name === 'AbortError') {
-        throw new Error('No fue posible conectar con el servidor.');
-      }
-      throw err;
-    } finally {
-      clearTimeout(timeout);
+      throw new Error(err.message || 'Ha ocurrido un error inesperado.');
     }
   },
 
   async login(email, password) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
-
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      return await request('/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-        signal: controller.signal,
+        body: { email, password },
       });
-
-      if (response.status === 401) {
+    } catch (err) {
+      if (err.status === 401) {
         throw new Error('Correo o contraseña incorrectos.');
       }
-
-      if (response.status === 500) {
-        throw new Error('Ha ocurrido un error inesperado.');
-      }
-
-      if (!response.ok) {
-        throw new Error('Ha ocurrido un error inesperado.');
-      }
-
-      return response.json();
-    } catch (err) {
-      if (err.name === 'AbortError') {
-        throw new Error('No fue posible conectar con el servidor.');
-      }
-      throw err;
-    } finally {
-      clearTimeout(timeout);
+      throw new Error(err.message || 'Ha ocurrido un error inesperado.');
     }
   },
 
   async getDashboard() {
-    const response = await fetch(`${API_BASE_URL}/dashboard`, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-    if (!response.ok) {
-      throw new Error('Error al cargar el dashboard');
-    }
-    return response.json();
+    return request('/dashboard');
   },
 
   async postTransfer(data) {
-    const response = await fetch(`${API_BASE_URL}/transfer`, {
+    return request('/transfer', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: data,
     });
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || 'Error al realizar la transferencia');
-    }
-    return response.json();
   },
 };

@@ -134,7 +134,7 @@ export default function Profile() {
         <Card.Body>
           <div className="flex flex-col sm:flex-row items-center gap-6">
             <button type="button" onClick={handleAvatarClick} className="focus:outline-none focus:ring-2 focus:ring-[#2563EB] rounded-full">
-              <Avatar name={profile.nombre} src={avatarSrc} size="lg" />
+              <Avatar name={profile.nombre} src={avatarSrc || profile.avatar_url} size="lg" />
             </button>
             <input
               ref={fileInputRef}

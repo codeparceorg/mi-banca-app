@@ -1,6 +1,11 @@
 import Avatar from '../ui/Avatar';
+import { useAuth } from '../../context/AuthContext';
 
-export default function DashboardHeader({ userName }) {
+export default function DashboardHeader({ userName: propUserName }) {
+  const { auth } = useAuth();
+  const user = auth?.user;
+  const userName = user?.name || user?.full_name || propUserName || '';
+
   return (
     <div className="flex items-center justify-between mb-8">
       <div>
