@@ -55,8 +55,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black px-4">
-      <h2 className='caret-amber-50 text-amber-50'>mi prueba</h2>
+    <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] px-4">
       <Card className="w-full max-w-sm">
         <Card.Body className="space-y-6">
           <div className="text-center space-y-2">
