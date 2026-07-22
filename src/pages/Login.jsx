@@ -55,10 +55,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black px-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] px-4">
       <Card className="w-full max-w-sm">
-      <h2>test new version</h2>
-
         <Card.Body className="space-y-6">
           <div className="text-center space-y-2">
             <div className="text-4xl">🏦</div>
