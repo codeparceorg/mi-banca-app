@@ -15,6 +15,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Debug
+        run: |
+          echo "repository_owner=${{ github.repository_owner }}"
+          echo "repository=${{ github.repository }}"
+          echo "repository_name=${{ github.event.repository.name }}"
+
       - name: Actions for Clear images
         uses: codeparce/ci-workflows/.github/actions/github/clear@v1
         with:
