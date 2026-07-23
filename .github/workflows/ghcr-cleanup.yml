@@ -1,0 +1,19 @@
+name: Gihub Clear Image
+on:
+  schedule:
+    - cron: '30 12 * * 4'
+  workflow_dispatch:
+
+jobs:
+  img-clear:
+    name: Images Clear
+    timeout-minutes: 3
+    needs: docker-publish
+    runs-on: kubernetes # Runner on-premise
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Actions for Clear images
+        uses: codeparce/ci-workflows/.github/actions/github/clear@v1
+        with:
+          container-access-token: ${{ github.repository_owner }}

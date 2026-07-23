@@ -3,7 +3,6 @@ name: On-Premise deploy
 on:
   push:
     branches: [ "main" ]
-
   #workflow_dispatch:
 
 jobs:
@@ -36,7 +35,7 @@ jobs:
           path: dist
 
       - name: Publish to Docker Hub
-        uses: codeparce/ci-workflows/.github/actions/registry@v1
+        uses: codeparce/ci-workflows/.github/actions/github/registry@v1
         with:
           container-access-token: ${{ secrets.CONTAINER_REGISTRY_PAT_GITHUB }}
 
