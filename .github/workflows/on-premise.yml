@@ -3,14 +3,12 @@ name: On-Premise deploy
 on:
   push:
     branches: [ "main" ]
-  schedule:
-  - cron: '30 12 * * 4'
+
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: kubernetes #Runner on-premise
-    if: github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,7 +22,6 @@ jobs:
 
   docker-publish:
     needs: build
-    if: github.event_name == 'push'
     permissions:
       contents: read
       packages: write
@@ -46,7 +43,6 @@ jobs:
 
   deploy:
     runs-on: kubernetes #Runner on-premise
-    if: github.event_name == 'push'
     needs: docker-publish
     env:
       GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
@@ -67,10 +63,3 @@ jobs:
           echo "Deployment completed successfully."
           echo "DNS Externo: http://${GITHUB_REPOSITORY_NAME}.${NS}.lab/"
           echo "DNS interno: ${SVC_NAME}.${NS}.svc.cluster.local/"
-
-
-  clear:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    name: Clear images workflows
-    uses: codeparce/ci-workflows/.github/workflows/ghcr-cleanup.yml@v1
-    secrets: inherit
