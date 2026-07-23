@@ -8,6 +8,9 @@ jobs:
   img-clear:
     name: Images Clear
     timeout-minutes: 3
+    permissions:
+      contents: read
+      packages: write
     runs-on: kubernetes # Runner on-premise
     steps:
       - uses: actions/checkout@v4
@@ -16,3 +19,4 @@ jobs:
         uses: codeparce/ci-workflows/.github/actions/github/clear@v1
         with:
           package-name: ${{ github.event.repository.name }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
