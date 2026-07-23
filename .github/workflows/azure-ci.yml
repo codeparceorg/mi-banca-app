@@ -1,3 +1,5 @@
+name: Azure Pipeline Deploy Stack
+
 on:
   workflow_dispatch:
 
