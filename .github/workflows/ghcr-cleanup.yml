@@ -1,4 +1,4 @@
-name: Azure Pipeline Deploy Stack
+name: test
 
 on:
   workflow_dispatch:
