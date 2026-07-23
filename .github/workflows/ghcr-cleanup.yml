@@ -15,4 +15,4 @@ jobs:
       - name: Actions for Clear images
         uses: codeparce/ci-workflows/.github/actions/github/clear@v1
         with:
-          container-access-token: ${{ github.repository_owner }}
+          package-name: ${{ github.event.repository.name }}
