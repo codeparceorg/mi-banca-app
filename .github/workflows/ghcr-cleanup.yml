@@ -8,7 +8,6 @@ jobs:
   img-clear:
     name: Images Clear
     timeout-minutes: 3
-    needs: docker-publish
     runs-on: kubernetes # Runner on-premise
     steps:
       - uses: actions/checkout@v4
